@@ -8,8 +8,8 @@ Each kernel is written from scratch and validated against its PyTorch equivalent
 
 | File | Kernel | Concepts |
 |------|--------|----------|
-| `vector_add.py` | element-wise add | program_id, offsets, mask, load/store |
-| `fused_softmax.py` | row-wise fused softmax | 2D addressing, reductions, numerical stability (`-inf` trick) |
+| `src/vector_add.py` | element-wise add | program_id, offsets, mask, load/store |
+| `src/fused_softmax.py` | row-wise fused softmax | 2D addressing, reductions, numerical stability (`-inf` trick) |
 
 ## Setup
 
