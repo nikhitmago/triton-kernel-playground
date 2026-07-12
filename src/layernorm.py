@@ -23,8 +23,8 @@ def layernorm_fwd_fused_kernel(x_ptr, out_ptr, scale_ptr, shift_ptr, n_cols, eps
 
     # Read data into SRAM
     row = tl.load(x_ptr + offsets_x, mask=mask, other=0.0)
-    scale = tl.load(scale_ptr + offsets_params, mask=mask)
-    shift = tl.load(shift_ptr + offsets_params, mask=mask)
+    scale = tl.load(scale_ptr + offsets_params, mask=mask, other=0.0)
+    shift = tl.load(shift_ptr + offsets_params, mask=mask, other=0.0)
 
     # Compute layer norm
 
