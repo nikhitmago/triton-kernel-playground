@@ -4,6 +4,12 @@ import triton.language as tl
 
 DEVICE = torch.device('cuda:0')
 
+# NOTE: this is the case where n_cols <= BLOCK_SIZE, i.e. the whole row fits in
+# one block/SRAM and is loaded once (BLOCK_SIZE = next_power_of_2(n_cols)).
+# TODO: handle the reverse case (n_cols > BLOCK_SIZE) where the row does not fit
+#       in a single block -- loop over the row in chunks (online softmax: track a
+#       running max and running sum, rescaling as new chunks arrive).
+
 
 @triton.jit
 def fused_softmax_kernel(x_ptr, out_ptr, n_cols, BLOCK_SIZE: tl.constexpr):
