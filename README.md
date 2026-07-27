@@ -12,6 +12,8 @@ Each kernel is written from scratch and validated against its PyTorch equivalent
 | `src/fused_softmax.py` | row-wise fused softmax | 2D addressing, reductions, numerical stability (`-inf` trick) |
 | `src/layernorm.py` | row-wise fused LayerNorm | mean/variance reductions, per-column affine, variance-masking fix |
 | `src/dropout.py` | seeded-mask dropout | `tl.where`, inverted-dropout scaling `1/(1-p)` |
+| `src/rms_norm.py` | row-wise fused RMSNorm | single reduction (sum of squares), no shift (unlike LayerNorm), epsilon stability |
+| `src/matmul.py` | tiled matrix multiply | 2D grid, BLOCK_M/N/K tiling, accumulator loop, stride-based addressing, tl.dot (tensor cores) |
 
 ## Setup
 
