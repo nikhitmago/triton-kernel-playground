@@ -52,17 +52,18 @@ def matmul_kernel(
     pid_n = tl.program_id(axis=1)
 
     # Offset stuff
-    row_offsets = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)
-    col_offsets = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)
-    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
+    row_offsets = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)  # 0 + [0,1] = [0,1], 2 + [0,1] = [2,3]
+    col_offsets = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)  # [0,1], [2,3]
+    acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)  # [2,2]
 
     for k in range(0, K, BLOCK_K):
-        k_offsets = k + tl.arange(0, BLOCK_K)
+        k_offsets = k + tl.arange(0, BLOCK_K)  # [0,1], [2,3]
 
         # Load A: (M, K)
+        # row_offsets[:, None] makes [0,1] => [[0], [1]]
         a_mask = (row_offsets[:, None] < M) & (k_offsets[None, :] < K)
         a_tile = tl.load(
-            A_ptr + (row_offsets[:, None] * stride_am) + (k_offsets[None, :] * stride_ak),
+            A_ptr + (row_offsets[:, None] * stride_am) + (k_offsets[None, :] * stride_ak), # broadcasting
             mask=a_mask,
             other=0.0
         )
@@ -70,19 +71,19 @@ def matmul_kernel(
         # Load B: (K, N)
         b_mask = (k_offsets[:, None] < K) & (col_offsets[None, :] < N)
         b_tile = tl.load(
-            B_ptr + (k_offsets[:, None] * stride_bk) + (col_offsets[None, :] * stride_bn),
+            B_ptr + (k_offsets[:, None] * stride_bk) + (col_offsets[None, :] * stride_bn),  # broadcasting
             mask=b_mask,
             other=0.0
         )
 
         # Local matmul
-        c_tile = tl.dot(a_tile, b_tile)
+        c_tile = tl.dot(a_tile, b_tile)  # in triton .dot does matmul
         acc += c_tile
 
     # Store results back in C
     c_mask = (row_offsets[:, None] < M) & (col_offsets[None, :] < N)
     tl.store(
-        C_ptr + (row_offsets[:, None] * stride_cm) + (col_offsets[None, :] * stride_cn),
+        C_ptr + (row_offsets[:, None] * stride_cm) + (col_offsets[None, :] * stride_cn),  # broadcasting
         acc,
         mask=c_mask
     )
